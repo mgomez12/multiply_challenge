@@ -66,3 +66,4 @@ class TCSBot():
             return first_resp
         else:
             return self.place_plate(to_ix, horiz_comp, comp_torque)
+        
