@@ -1,1 +1,0 @@
-from .TCSBot import TCSBot

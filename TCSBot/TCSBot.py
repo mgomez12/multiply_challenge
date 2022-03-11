@@ -50,4 +50,19 @@ class TCSBot():
         return self.send_cmd("DestC")
     def get_goal_locJ(self):
         return self.send_cmd("DestJ")
-        
+
+
+    #note: might not be future proof if default values get updated in robot since
+    # they would also have to be changed here
+    def teach_plate(self, ix, z_clearance=50):
+        return self.send_cmd(f'TeachPlate {ix} {z_clearance}')
+    def pick_plate(self, ix, horiz_comp=0, comp_torque=0):
+        return self.send_cmd(f'PickPlate {ix} {horiz_comp} {comp_torque}')
+    def place_plate(self, ix, horiz_comp=0, comp_torque=0):
+        return self.send_cmd(f'PlacePlate {ix} {horiz_comp} {comp_torque}')
+    def move_plate(self, from_ix, to_ix, horiz_comp=0, comp_torque=0):
+        first_resp = self.pick_plate(from_ix, horiz_comp, comp_torque)
+        if first_resp[0] != 0:
+            return first_resp
+        else:
+            return self.place_plate(to_ix, horiz_comp, comp_torque)
