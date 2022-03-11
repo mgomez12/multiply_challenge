@@ -1,8 +1,10 @@
 from telnetlib import Telnet
+import csv
 
 class TCSBot():
-    def __init__(self, sim=None, ip='192.168.0.1'):
-        print("initing")
+
+    
+    def __init__(self, sim=None, ip='192.168.0.1', default_cartesian=True):
         
         self.sim = sim
         if not sim:
@@ -10,6 +12,7 @@ class TCSBot():
         resp = self.attach()
         if (resp[0] != 0):
             raise Exception("Unable to attach")
+        self.default_cartesian = default_cartesian
         
         
     def send_cmd(self, s):
@@ -23,6 +26,18 @@ class TCSBot():
             return [int(i) for i in (self.sim.resp().split(' '))]
         else:
             return [int(i) for i in tn.read_until('\n').decode('ascii').split(' ')]
+
+    
+    def read_from_csv(self, fname, cartesian=None):
+        if (cartesian == None):
+            cartesian = self.default_cartesian
+        with open(fname, 'r') as f:
+            reader = csv.reader(f)
+            for row in reader:
+                resp = self.send_loc(row[0], tuple(row[1:]), cartesian)
+                if (resp[0] != 0):
+                    return resp
+                
         
     def attach(self):
         return self.send_cmd("attach 1")
@@ -32,24 +47,33 @@ class TCSBot():
         self.release() # add error checking
         return self.send_cmd("exit")
         
-    def send_cartC(self, ix, x, y, z, yaw, pitch, roll):
-        return self.send_cmd(f'locXyz {ix} {x} {y} {z} {yaw} {pitch} {roll}')
-    def send_cartJ(self, *args):
-        cmd = ' '.join([str(i) for i in args])
-        return self.send_cmd('locXyz' + cmd)
+    def send_loc(self, ix, position, cartesian=None):
+        cmd = ' '.join([str(i) for i in position])
+        if (cartesian == None):
+            cartesian = self.default_cartesian
+        if (cartesian):
+            return self.send_cmd(f'locXyz {ix} ' + cmd)
+        else:
+            return self.send_cmd(f'locAngles {ix} '  + cmd)
         
     def station_move(self, ix, profile):
         return self.send_cmd(f'Move {ix} {profile}')
     
-    def get_curr_locC(self):
-        return self.send_cmd("wherec")
-    def get_curr_locJ(self):
-        return self.send_cmd("wherej")
+    def get_curr_loc(self, cartesian=None):
+        if (cartesian == None):
+            cartesian = self.default_cartesian
+        if cartesian:
+            return self.send_cmd("wherec")
+        else:
+            return self.send_cmd("wherej")
 
-    def get_goal_locC(self):
-        return self.send_cmd("DestC")
-    def get_goal_locJ(self):
-        return self.send_cmd("DestJ")
+    def get_goal_loc(self, cartesian=None):
+        if (cartesian == None):
+            cartesian = self.default_cartesian
+        if cartesian:
+            return self.send_cmd("DestC")
+        else:
+            return self.send_cmd("DestJ")
 
 
     #note: might not be future proof if default values get updated in robot since

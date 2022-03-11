@@ -15,7 +15,7 @@ class Sim:
         args = s.split()
         print(s)
         if (args[0] == "attach"):
-            if args[1] == 1: # add invalid value handling
+            if args[1] == 1: # add invalid value handling?
                 self.attached = True
                 self.resp_buf = [0]
             else:
@@ -40,12 +40,14 @@ class Sim:
 s = Sim()
 b = TCSBot(s)
 
-print(b.send_cartC(0,1,2,3,1,2,3))
-print(b.get_curr_locC())
-print(b.send_cartJ(1, 4, 8, 4))
-print(b.get_goal_locC())
-print(b.get_goal_locJ())
+print(b.send_loc(0,(1,2,3,1,2,3)))
+print(b.get_curr_loc())
+print(b.send_loc(1, (4, 8, 4), cartesian=False))
+print(b.get_goal_loc())
+print(b.get_goal_loc(cartesian=False))
 print(b.teach_plate(2))
 print(b.pick_plate(2))
 print(b.place_plate(2,1,30))
 print(b.move_plate(2, 5, 1))
+print(b.read_from_csv('dummy_locs.csv'))
+print(b.read_from_csv('dummy_locs.csv', cartesian=False))
